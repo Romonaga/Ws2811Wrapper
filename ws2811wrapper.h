@@ -1,7 +1,7 @@
 #ifndef WS2811WRAPPER_H
 #define WS2811WRAPPER_H
 
-#include "ws2811wrapper_global.h"
+//#include "ws2811wrapper_global.h"
 
 #include <stdint.h>
 #include <stdio.h>
