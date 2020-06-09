@@ -1,8 +1,6 @@
 #ifndef WS2811WRAPPER_H
 #define WS2811WRAPPER_H
 
-//#include "ws2811wrapper_global.h"
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,14 +12,14 @@
 #include "ws2811.h"
 
 #define LED_STRIPTYPE(X)                                                  \
-            X(1, NEO_WS2811_STRIP_RGB, "Unknown Device."),                           \
-            X(2, NEO_WS2811_STRIP_RBG, "Sensor Device"),                              \
-            X(3, NEO_WS2811_STRIP_GRB, "Led Device"),                                    \
-            X(4, NEO_WS2811_STRIP_GBR, "Monitoring Deviice"),                        \
-            X(5, NEO_WS2811_STRIP_BRG, "Security Device"),                          \
-            X(6, NEO_WS2811_STRIP_BGR, "Weather Station Device"),                    \
-            X(7, NEO_SK6812_STRIP_RGBW, "Simple Blink Test Device"),                    \
-            X(8, NEO_SK6812_STRIP_GRBW, "Fire Detector Device")                   \
+            X(1, NEO_WS2811_STRIP_RGB, "NEO_WS2811_STRIP_RGB"),                           \
+            X(2, NEO_WS2811_STRIP_RBG, "NEO_WS2811_STRIP_RBG"),                              \
+            X(3, NEO_WS2811_STRIP_GRB, "NEO_WS2811_STRIP_GRB"),                                    \
+            X(4, NEO_WS2811_STRIP_GBR, "NEO_WS2811_STRIP_GBR"),                        \
+            X(5, NEO_WS2811_STRIP_BRG, "NEO_WS2811_STRIP_BRG"),                          \
+            X(6, NEO_WS2811_STRIP_BGR, "NEO_WS2811_STRIP_BGR"),                    \
+            X(7, NEO_SK6812_STRIP_RGBW, "NEO_SK6812_STRIP_RGBW"),                    \
+            X(8, NEO_SK6812_STRIP_GRBW, "NEO_SK6812_STRIP_GRBW")                   \
 
 
 #define LED_STRIPTYPE_ENUM(type, name, str) name = type
