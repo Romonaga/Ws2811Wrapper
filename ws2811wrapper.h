@@ -44,7 +44,7 @@ public:
     ~Ws2811Wrapper();
 
     //You Must Init The Matrix before use
-    ws2811_return_t initStrip(int width, int hight, LedStripType stripType, int dma, int gpio);
+    ws2811_return_t initStrip(u_int32_t width, u_int32_t hight, LedStripType stripType, int dma, int gpio,bool useGamaCorrection = false);
 
     //Clears the strip (Turns LEDS off.
     ws2811_return_t clearLeds(bool render = true);
@@ -73,6 +73,9 @@ public:
 
     //Self commenting code
     u_int32_t getNumberLeds();
+    u_int32_t getHight();
+    u_int32_t getWidth();
+
 
     //On functions that return a ws2811_return_t, this will return a human readable error code back.
     static const char * ws2811_get_return_t_str(const ws2811_return_t state);
@@ -96,9 +99,10 @@ private:
     ws2811_t    _ledstring;
     int _dma;
     int _gpio;
-    int _numLights;
-    int _height;
-    int _width;
+    bool _useGamaCorrection;
+    u_int32_t _numLights;
+    u_int32_t _height;
+    u_int32_t _width;
     LedStripType _stripType;
     bool _clearOnExit;
 

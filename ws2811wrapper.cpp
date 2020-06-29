@@ -4,7 +4,16 @@
 #include <time.h>
 
 
-
+ uint8_t  gamma8[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 5, 6, 6, 6, 6, 7, 7, 7,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 5, 5, 5, 7, 8, 8, 8, 9, 9, 9,10,
+10, 10, 11, 11, 11, 12, 12, 13,
+17, 17, 18, 18, 19, 19, 20, 20,
+25, 26, 27, 27, 28, 29, 29, 30,
+37, 38, 39, 39, 40, 41, 42, 43,
+51, 52, 54, 55, 56, 57, 58, 59,
+69, 70, 72, 73, 74, 75, 77, 78,
+90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
+115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142, 144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175, 177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213, 215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
 
 Ws2811Wrapper::Ws2811Wrapper()
 {
@@ -17,17 +26,21 @@ Ws2811Wrapper::Ws2811Wrapper()
     _ledstring.channel[0].count = 0;
     _ledstring.channel[0].invert = 0;
     _ledstring.channel[0].brightness = 255;
-    _ledstring.channel[0].leds = NULL;
+    _ledstring.channel[0].leds = nullptr;
+    _ledstring.channel[0].gamma = nullptr;
+
 
     _ledstring.channel[1].strip_type  = WS2811_STRIP_RGB;
     _ledstring.channel[1].gpionum = 0;
     _ledstring.channel[1].count = 0;
     _ledstring.channel[1].invert = 0;
     _ledstring.channel[1].brightness = 255;
-    _ledstring.channel[1].leds = NULL;
+    _ledstring.channel[1].leds = nullptr;
+    _ledstring.channel[1].gamma = nullptr;
 
     _height = 1;
     _width = 0;
+    _useGamaCorrection = false;
     _clearOnExit = true;
 
     _matrix = NULL;
@@ -50,7 +63,7 @@ ws2811_return_t Ws2811Wrapper::show()
 {
     ws2811_return_t result = WS2811_SUCCESS;
 
-    int x, y;
+    u_int32_t x, y;
 
     for (x = 0; x < _width; x++)
        for (y = 0; y < _height; y++)
@@ -64,7 +77,7 @@ ws2811_return_t Ws2811Wrapper::show()
     return result;
 }
 
-ws2811_return_t Ws2811Wrapper::initStrip(int width, int height, LedStripType stripType, int dma, int gpio)
+ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t width, u_int32_t height, LedStripType stripType, int dma, int gpio, bool useGamaCorrection)
 {
     ws2811_return_t retval = WS2811_SUCCESS;
 
@@ -73,7 +86,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(int width, int height, LedStripType str
     _ledstring.channel[0].count = _width * _height;
 
     _stripType = stripType;
-
+    _useGamaCorrection = useGamaCorrection;
     setStripType();
 
     switch (gpio)
@@ -99,6 +112,12 @@ ws2811_return_t Ws2811Wrapper::initStrip(int width, int height, LedStripType str
     {
         retval = WS2811_ERROR_DMA;
 
+    }
+
+    if(true == _useGamaCorrection)
+    {
+        _ledstring.channel[1].gamma = gamma8;
+        _ledstring.channel[0].gamma = gamma8;
     }
 
     if (retval == WS2811_SUCCESS)
@@ -182,7 +201,7 @@ ws2811_return_t Ws2811Wrapper::clearLeds(bool render)
 {
     ws2811_return_t retVal = WS2811_SUCCESS;
 
-    int x, y;
+    u_int32_t x, y;
 
     for (y = 0; y < _height ; y++)
     {
@@ -205,57 +224,10 @@ void Ws2811Wrapper::setClearOnExit(bool clear)
     _clearOnExit = clear;
 }
 
-/*
-
-void Ws2811Wrapper::matrix_raise(void)
-{
-    int x, y;
-
-    for (y = 0; y < (_height - 1); y++)
-    {
-        for (x = 0; x < _width; x++)
-        {
-            _matrix[ (y * _width) + x] = _matrix[ (y + 1) * _width + x];
-        }
-    }
-}
-
-*/
-/*
-bool Ws2811Wrapper::light_printer(ws2811_led_t color)
-{
-    bool retval = true;
-    ws2811_return_t  ret;
-
-    clear_leds();
-
-    int x, y;
-
-    for (y = 0; y < _height; y++)
-    {
-        for (x = 0; x < _width; x++)
-        {
-            _matrix[ (y * _width) + x] = color;
-        }
-    }
-
-    while (1)
-    {
-        fprintf(stderr, "Inside Loop\n");
-        renderLeds();
-        usleep(100000);
-    }
-
-    retval  =   (ret == WS2811_SUCCESS) ? true : false;
-
-    return retval;
-
-}
-*/
 
 void Ws2811Wrapper::setPixelColor(ws2811_led_t color)
 {
-    int x, y;
+    u_int32_t x, y;
 
     for (y = 0; y < _height; y++)
     {
@@ -300,6 +272,15 @@ u_int32_t Ws2811Wrapper::getNumberLeds()
     return _ledstring.channel[0].count;
 }
 
+u_int32_t Ws2811Wrapper::getHight()
+{
+    return _height;
+}
+
+u_int32_t Ws2811Wrapper::getWidth()
+{
+    return _width;
+}
 
 ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue)
 {
