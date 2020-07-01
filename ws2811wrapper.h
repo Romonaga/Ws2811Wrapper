@@ -65,6 +65,16 @@ public:
     // Some LEDStrips all for a whitness (think luminosoty(sic))
     void setBrightness(u_int8_t brightness);
 
+    // You can only specify for the complete strip.
+    // Colors are funny, gamma correction attempts to
+    //make colors more like the eye sees them.
+    void setGammaCorrection(bool useGammaCorrection);
+
+    // You can only specify for the complete strip.
+    // Colors are funny, gamma correction attempts to
+    //make colors more like the eye sees them.
+    void setCustomGammaCorrection(uint8_t*  gamma8);
+
     //You can shut down the Matrix but leave  the lights on.
     //This allows for that in the destructor, the defailt is yes.
     //When the destroctor fires and this is set to false The strip will
@@ -85,6 +95,11 @@ public:
     static ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue);
     static ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
     static ws2811_led_t Wheel(u_int8_t wheelPos);
+    static ws2811_led_t Red(ws2811_led_t color);
+    static ws2811_led_t Green(ws2811_led_t color);
+    static ws2811_led_t Blue(ws2811_led_t color);
+    static ws2811_led_t DimColor(ws2811_led_t color);
+
 
     static void waitSec(u_int32_t sec);
     static void waitMillSec(u_int32_t mill);

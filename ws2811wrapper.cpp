@@ -15,6 +15,9 @@
 90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
 115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142, 144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175, 177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213, 215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
 
+uint8_t  gammadefalt[256];
+
+
 Ws2811Wrapper::Ws2811Wrapper()
 {
     std::memset(&_ledstring, '\0', sizeof(_ledstring));
@@ -42,7 +45,10 @@ Ws2811Wrapper::Ws2811Wrapper()
     _width = 0;
     _useGamaCorrection = false;
     _clearOnExit = true;
-
+    for(int counter = 0; counter < 256; counter++)
+    {
+        gammadefalt[counter] = counter;
+    }
     _matrix = NULL;
 }
 
@@ -52,6 +58,12 @@ Ws2811Wrapper::~Ws2811Wrapper()
     {
         if(true == _clearOnExit)
             clearLeds();
+
+        //the ws2811c allocates a memory buffer
+        //as we wish to override it we will insure memory
+        //is nulled before we finalize.
+        _ledstring.channel[1].gamma = nullptr;
+        _ledstring.channel[0].gamma = nullptr;
 
         ws2811_fini(&_ledstring);
         delete [] _matrix;
@@ -77,6 +89,27 @@ ws2811_return_t Ws2811Wrapper::show()
     return result;
 }
 
+void Ws2811Wrapper::setCustomGammaCorrection(uint8_t*  gamma8)
+{
+    _ledstring.channel[1].gamma = gamma8;
+    _ledstring.channel[0].gamma = gamma8;
+}
+
+void Ws2811Wrapper::setGammaCorrection(bool useGammaCorrection)
+{
+    _useGamaCorrection = useGammaCorrection;
+    if(true == _useGamaCorrection)
+    {
+        _ledstring.channel[1].gamma = gamma8;
+        _ledstring.channel[0].gamma = gamma8;
+    }
+    else
+    {
+        _ledstring.channel[1].gamma = gammadefalt;
+        _ledstring.channel[0].gamma = gammadefalt;
+    }
+}
+
 ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t width, u_int32_t height, LedStripType stripType, int dma, int gpio, bool useGamaCorrection)
 {
     ws2811_return_t retval = WS2811_SUCCESS;
@@ -86,7 +119,6 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t width, u_int32_t height, LedS
     _ledstring.channel[0].count = _width * _height;
 
     _stripType = stripType;
-    _useGamaCorrection = useGamaCorrection;
     setStripType();
 
     switch (gpio)
@@ -114,19 +146,21 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t width, u_int32_t height, LedS
 
     }
 
-    if(true == _useGamaCorrection)
-    {
-        _ledstring.channel[1].gamma = gamma8;
-        _ledstring.channel[0].gamma = gamma8;
-    }
-
     if (retval == WS2811_SUCCESS)
     {
          _matrix =  new ws2811_led_t[sizeof(ws2811_led_t) * _width * _height];
-	
-       // _matrix =  (ws2811_led_t*)malloc(sizeof(ws2811_led_t) * _width * _height);
         retval =  ws2811_init(&_ledstring);
     }
+
+    //the ws2811c allocates a memory buffer
+    //as we wish to override it this hack will deallocate
+    //and replace with our own gamma's I prefered this over modifying
+    //the ws2811c lib.
+
+    free(_ledstring.channel[1].gamma);
+    free(_ledstring.channel[0].gamma);
+
+    setGammaCorrection(useGamaCorrection);
 
     return retval;
 }
@@ -310,6 +344,26 @@ ws2811_led_t Ws2811Wrapper::Wheel(u_int8_t wheelPos)
   return Color(wheelPos * 3, 255 - wheelPos * 3, 0);
 }
 
+ws2811_led_t Ws2811Wrapper::Red(ws2811_led_t color)
+{
+    return (color >> 16) & 0xFF;
+}
+
+ws2811_led_t Ws2811Wrapper::Green(ws2811_led_t color)
+{
+    return (color >> 8) & 0xFF;
+}
+
+ws2811_led_t Ws2811Wrapper::Blue(ws2811_led_t color)
+{
+    return color & 0xFF;
+}
+
+ws2811_led_t Ws2811Wrapper::DimColor(ws2811_led_t color)
+{
+    ws2811_led_t dimColor = Color(Red(color) >> 1, Green(color) >> 1, Blue(color) >> 1);
+    return dimColor;
+}
 
 void Ws2811Wrapper::waitSec(u_int32_t sec)
 {
