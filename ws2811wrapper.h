@@ -32,29 +32,43 @@ typedef enum {
 } LedStripType;
 
 
+/*
+
+#define LIGHTSCOLORS(X)                                                  \
+            X(0, Nope, "Why Are We Here?",0xF0F8FF),                           \
+            X(1, AliceBlue, "AliceBlue",0xF0F8FF),                           \
+            X(2, AntiqueWhite, "AntiqueWhite", 0xFAEBD7),                              \
+            X(3, Aqua, "Aqua",0x00FFFF),                                    \
+            X(4, Aquamarine, "Aquamarine", 0x7FFFD4),                        \
+            X(5, Azure, "Azure",0xF0FFFF),   \
+            X(6, Beige, "Beige",0xF5F5DC),                          \
+            X(7, Bisque, "Bisque",0xFFE4C4),                    \
+            X(8, Black, "Black",0x000000),                    \
+            X(9, Blue, "Blue",0x0000FF),                   \
+            X(10, BlueViolet, "BlueViolet",0x8A2BE2),                   \
+            X(11, Brown, "Brown",0xA52A2A),                   \
+            X(12, BurlyWood, "BurlyWood",0xDEB887),                   \
+            X(13, CadetBlue, "CadetBlue",0x5F9EA0),                   \
+            X(14, Chartreuse, "Chartreuse",0x7FFF00),                   \
+            X(15, Chocolate, "Chocolate",0xD2691E),                   \
+            X(16, Coral, "Coral",0xFF7F50),                   \
+            X(17, CornflowerBlue, "CornflowerBlue",0x6495ED)                  \
+
+
+#define LIGHTSCOLORS_ENUM(type, name, twitch, color) name = type
+#define LIGHTSCOLORS_TWITCH(type, name, twitch, color) twitch
+#define LIGHTSCOLORS_COLOR(type, name, twitch, color) color
+
 typedef enum {
-        AliceBlue=0xF0F8FF,
-        Amethyst=0x9966CC,
-        AntiqueWhite=0xFAEBD7,
-        Aqua=0x00FFFF,
-        Aquamarine=0x7FFFD4,
-        Azure=0xF0FFFF,
-        Beige=0xF5F5DC,
-        Bisque=0xFFE4C4,
-        Black=0x000000,
-        BlanchedAlmond=0xFFEBCD,
-        Blue=0x0000FF,
-        BlueViolet=0x8A2BE2,
-        Brown=0xA52A2A,
-        BurlyWood=0xDEB887,
-        CadetBlue=0x5F9EA0,
-        Chartreuse=0x7FFF00,
-        Chocolate=0xD2691E,
-        Coral=0xFF7F50,
-        CornflowerBlue=0x6495ED,
-        Cornsilk=0xFFF8DC,
-        Crimson=0xDC143C,
-        Cyan=0x00FFFF,
+    LIGHTSCOLORS(LIGHTSCOLORS_ENUM),
+
+    LIGHTSCOLORS_ENUM_COUNT
+} LedLightColors;*/
+
+
+
+typedef enum {
+
         DarkBlue=0x00008B,
         DarkCyan=0x008B8B,
         DarkGoldenrod=0xB8860B,
@@ -70,7 +84,6 @@ typedef enum {
         DarkSalmon=0xE9967A,
         DarkSeaGreen=0x8FBC8F,
         DarkSlateBlue=0x483D8B,
-        DarkSlateGray=0x2F4F4F,
         DarkSlateGrey=0x2F4F4F,
         DarkTurquoise=0x00CED1,
         DarkViolet=0x9400D3,
@@ -192,6 +205,7 @@ typedef enum {
 
     } HTMLColorCode;
 
+
 class  Ws2811Wrapper
 {
 public:
@@ -203,7 +217,7 @@ public:
     ~Ws2811Wrapper();
 
     //You Must Init The Matrix before use
-    ws2811_return_t initStrip(u_int32_t width, u_int32_t hight, LedStripType stripType, int dma, int gpio,bool useGamaCorrection = false);
+    ws2811_return_t initStrip(u_int32_t width, u_int32_t hight, LedStripType stripType, int dma, int gpio);
 
     //Clears the strip (Turns LEDS off.
     ws2811_return_t clearLeds(bool render = true);
@@ -224,10 +238,6 @@ public:
     // Some LEDStrips all for a whitness (think luminosoty(sic))
     void setBrightness(u_int8_t brightness);
 
-    // You can only specify for the complete strip.
-    // Colors are funny, gamma correction attempts to
-    //make colors more like the eye sees them.
-    void setGammaCorrection(bool useGammaCorrection);
 
     // You can only specify for the complete strip.
     // Colors are funny, gamma correction attempts to
@@ -254,9 +264,9 @@ public:
     static ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue);
     static ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
     static ws2811_led_t Wheel(u_int8_t wheelPos);
-    static ws2811_led_t Red(ws2811_led_t color);
-    static ws2811_led_t Green(ws2811_led_t color);
-    static ws2811_led_t Blue(ws2811_led_t color);
+    static int Red(ws2811_led_t color);
+    static int  Green(ws2811_led_t color);
+    static int  Blue(ws2811_led_t color);
     static ws2811_led_t DimColor(ws2811_led_t color);
 
 
