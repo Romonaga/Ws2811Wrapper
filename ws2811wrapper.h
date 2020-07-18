@@ -242,7 +242,7 @@ public:
     // You can only specify for the complete strip.
     // Colors are funny, gamma correction attempts to
     //make colors more like the eye sees them.
-    void setCustomGammaCorrection(uint8_t*  gamma8);
+    void setCustomGammaCorrection(double gammaFactor);
 
     //You can shut down the Matrix but leave  the lights on.
     //This allows for that in the destructor, the defailt is yes.
@@ -268,6 +268,8 @@ public:
     static int  Green(ws2811_led_t color);
     static int  Blue(ws2811_led_t color);
     static ws2811_led_t DimColor(ws2811_led_t color);
+    static ws2811_led_t BrightenColor(ws2811_led_t color);
+
 
 
     static void waitSec(u_int32_t sec);
@@ -293,3 +295,48 @@ private:
 };
 
 #endif // WS2811WRAPPER_H
+//https://bisqwit.iki.fi/story/howto/dither/jy/
+/*
+ * <?php
+
+ //Create a 8x8 threshold map
+$map = array_map(function($p)
+                 {
+                   $q = $p ^ ($p >> 3);
+                   return ((($p & 4) >> 2) | (($q & 4) >> 1)
+                         | (($p & 2) << 1) | (($q & 2) << 2)
+                         | (($p & 1) << 4) | (($q & 1) << 5)) / 64.0;
+                 }, range(0,63));
+
+// Define palette
+$pal = Array(0x080000,0x201A0B,0x432817,0x492910,
+             0x234309,0x5D4F1E,0x9C6B20,0xA9220F,
+             0x2B347C,0x2B7409,0xD0CA40,0xE8A077,
+             0x6A94AB,0xD5C4B3,0xFCE76E,0xFCFAE2);
+
+//Read input image
+$srcim = ImageCreateFromPng('scene.png');
+$w = ImageSx($srcim);
+$h = ImageSy($srcim);
+
+// Create paletted image
+$im = ImageCreate($w,$h);
+foreach($pal as $c) ImageColorAllocate($im, $c>>16, ($c>>8)&0xFF, $c&0xFF);
+
+$thresholds = Array(256/4, 256/4, 256/4);
+
+// Render the paletted image by converting each input pixel using the threshold map.
+for($y=0; $y<$h; ++$y)
+  for($x=0; $x<$w; ++$x)
+  {
+    $map_value = $map[($x & 7) + (($y & 7) << 3)];
+    $color = ImageColorsForIndex($srcim, ImageColorAt($srcim, $x,$y));
+    $r = (int)($color['red']   + $map_value * $thresholds[0]);
+    $g = (int)($color['green'] + $map_value * $thresholds[1]);
+    $b = (int)($color['blue']  + $map_value * $thresholds[2]);
+    // Plot using the palette index with color that is closest to this value
+    ImageSetPixel($im, $x,$y, ImageColorClosest($im, $r,$g,$b));
+  }
+ImagePng($im, 'scenebayer0.png');
+ *
+ * */

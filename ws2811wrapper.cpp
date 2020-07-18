@@ -69,13 +69,9 @@ ws2811_return_t Ws2811Wrapper::show()
     return result;
 }
 
-void Ws2811Wrapper::setCustomGammaCorrection(uint8_t*  gamma8)
+void Ws2811Wrapper::setCustomGammaCorrection(double gammaFactor)
 {
-    for(int counter = 0; counter < 256; counter++)
-    {
-        _ledstring.channel[0].gamma[counter] = gamma8[counter];
-        _ledstring.channel[1].gamma[counter] = gamma8[counter];
-    }
+   setCustomGammaFactor(&_ledstring, gammaFactor);
 }
 
 
@@ -323,6 +319,13 @@ int Ws2811Wrapper::Blue(ws2811_led_t color)
 ws2811_led_t Ws2811Wrapper::DimColor(ws2811_led_t color)
 {
     ws2811_led_t dimColor = Color(Red(color) >> 1, Green(color) >> 1, Blue(color) >> 1);
+    return dimColor;
+}
+
+
+ws2811_led_t Ws2811Wrapper::BrightenColor(ws2811_led_t color)
+{
+    ws2811_led_t dimColor = Color(Red(color) << 1, Green(color) << 1, Blue(color) << 1);
     return dimColor;
 }
 
