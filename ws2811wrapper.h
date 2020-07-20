@@ -278,6 +278,8 @@ public:
 private:
     //Internal
     void setStripType();
+    void cleanUp();
+
 
     //Private is private we don't talk about them.
 private:

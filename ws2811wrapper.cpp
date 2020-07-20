@@ -34,20 +34,16 @@ Ws2811Wrapper::Ws2811Wrapper()
     _useGamaCorrection = false;
     _clearOnExit = true;
 
-    _matrix = NULL;
+    _matrix = nullptr;
 }
 
 Ws2811Wrapper::~Ws2811Wrapper()
 {
 
-    if(_matrix != NULL)
-    {
-        if(true == _clearOnExit)
-            clearLeds();
-        ws2811_fini(&_ledstring);
-        delete [] _matrix;
-    }
+    if(true == _clearOnExit)
+        clearLeds();
 
+    cleanUp();
 
 }
 
@@ -71,14 +67,25 @@ ws2811_return_t Ws2811Wrapper::show()
 
 void Ws2811Wrapper::setCustomGammaCorrection(double gammaFactor)
 {
-   setCustomGammaFactor(&_ledstring, gammaFactor);
+   ws2811_set_custom_gamma_factor(&_ledstring, gammaFactor);
 }
 
-
+void Ws2811Wrapper::cleanUp()
+{
+    if(_matrix != nullptr)
+    {
+        ws2811_fini(&_ledstring);
+        delete [] _matrix;
+        _matrix = nullptr;
+    }
+}
 
 ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t width, u_int32_t height, LedStripType stripType, int dma, int gpio)
 {
     ws2811_return_t retval = WS2811_SUCCESS;
+
+    cleanUp();
+
 
     _height = height;
     _width = width;
