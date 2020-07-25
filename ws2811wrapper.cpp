@@ -29,8 +29,8 @@ Ws2811Wrapper::Ws2811Wrapper()
     _ledstring.channel[1].leds = nullptr;
     _ledstring.channel[1].gamma = nullptr;
 
-    _height = 1;
-    _width = 0;
+    _columns = 1;
+    _rows = 0;
     _useGamaCorrection = false;
     _clearOnExit = true;
 
@@ -47,15 +47,29 @@ Ws2811Wrapper::~Ws2811Wrapper()
 
 }
 
+void Ws2811Wrapper::matrixraise(void)
+{
+    u_int32_t x, y;
+
+    for (y = 0; y < (_columns - 1); y++)
+    {
+        for (x = 0; x < _rows; x++)
+        {
+            _matrix[y * _rows + x] = _matrix[(y + 1)*_rows + _rows - x - 1];
+        }
+    }
+}
+
+
 ws2811_return_t Ws2811Wrapper::show()
 {
     ws2811_return_t result = WS2811_SUCCESS;
 
     u_int32_t x, y;
 
-    for (x = 0; x < _width; x++)
-       for (y = 0; y < _height; y++)
-           _ledstring.channel[0].leds[(y * _width) + x] = _matrix[ (y * _width) + x];
+    for (x = 0; x < _rows; x++)
+       for (y = 0; y < _columns; y++)
+           _ledstring.channel[0].leds[(y * _rows) + x] = _matrix[ (y * _rows) + x];
 
     result = ws2811_render(&_ledstring);
 
@@ -80,16 +94,16 @@ void Ws2811Wrapper::cleanUp()
     }
 }
 
-ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t width, u_int32_t height, LedStripType stripType, int dma, int gpio)
+ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio)
 {
     ws2811_return_t retval = WS2811_SUCCESS;
 
     cleanUp();
 
 
-    _height = height;
-    _width = width;
-    _ledstring.channel[0].count = _width * _height;
+    _columns = columns;
+    _rows = rows;
+    _ledstring.channel[0].count = _rows * _columns;
 
     _stripType = stripType;
     setStripType();
@@ -121,7 +135,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t width, u_int32_t height, LedS
 
     if (retval == WS2811_SUCCESS)
     {
-         _matrix =  new ws2811_led_t[sizeof(ws2811_led_t) * _width * _height];
+         _matrix =  new ws2811_led_t[sizeof(ws2811_led_t) * _rows * _columns];
         retval =  ws2811_init(&_ledstring);
     }
 
@@ -201,11 +215,11 @@ ws2811_return_t Ws2811Wrapper::clearLeds(bool render)
 
     u_int32_t x, y;
 
-    for (y = 0; y < _height ; y++)
+    for (y = 0; y < _rows ; y++)
     {
-        for (x = 0; x < _width; x++)
+        for (x = 0; x < _columns; x++)
         {
-            _matrix[(y * _width) + x] = 0;
+            _matrix[(y * _columns) + x] = 0;
         }
     }
 
@@ -227,36 +241,49 @@ void Ws2811Wrapper::setPixelColor(ws2811_led_t color)
 {
     u_int32_t x, y;
 
-    for (y = 0; y < _height; y++)
+    for (y = 0; y < _rows; y++)
     {
-        for (x = 0; x < _width; x++)
+        for (x = 0; x < _columns; x++)
         {
-            _matrix[ (y * _width) + x] = color;
+            _matrix[ (y * _columns) + x] = color;
         }
     }
 
 }
 
-void Ws2811Wrapper::setPixelColor(u_int32_t width, u_int32_t hight, ws2811_led_t color)
+void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixal, ws2811_led_t color)
 {
-    _matrix[width * hight] = color;
+    _matrix[row * pixal] = color;
+}
+
+void Ws2811Wrapper::setPixelColor(u_int32_t pixal, ws2811_led_t color)
+{
+    _matrix[pixal] = color;
 }
 
 
-void Ws2811Wrapper::setPixelColor(u_int32_t width, u_int32_t hight, u_int8_t red, u_int8_t green, u_int8_t blue)
+
+void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue)
 {
-    _matrix[width * hight] = Color(red, green, blue);
+    _matrix[row * pixal] = Color(red, green, blue);
 }
 
-void Ws2811Wrapper::setPixelColor(u_int32_t width, u_int32_t hight, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
+void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
 {
-    _matrix[width * hight] = Color(red, green, blue, white);
+    _matrix[row * pixal] = Color(red, green, blue, white);
 }
 
-ws2811_led_t Ws2811Wrapper::getPixelColor(u_int32_t width, u_int32_t hight)
+ws2811_led_t Ws2811Wrapper::getPixelColor(u_int32_t row, u_int32_t pixal)
 {
-    return _matrix[width * hight];
+    return _matrix[row * pixal];
 }
+
+ws2811_led_t Ws2811Wrapper::getPixelColor(u_int32_t pixal)
+{
+    return _matrix[pixal];
+}
+
+
 
 void Ws2811Wrapper::setBrightness(u_int8_t brightness)
 {
@@ -267,17 +294,18 @@ void Ws2811Wrapper::setBrightness(u_int8_t brightness)
 
 u_int32_t Ws2811Wrapper::getNumberLeds()
 {
+
     return _ledstring.channel[0].count;
 }
 
-u_int32_t Ws2811Wrapper::getHight()
+u_int32_t Ws2811Wrapper::getColumns()
 {
-    return _height;
+    return _columns;
 }
 
-u_int32_t Ws2811Wrapper::getWidth()
+u_int32_t Ws2811Wrapper::getRows()
 {
-    return _width;
+    return _rows;
 }
 
 ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue)

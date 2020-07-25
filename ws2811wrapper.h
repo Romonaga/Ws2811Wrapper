@@ -21,7 +21,7 @@
             X(7, NEO_SK6812_STRIP_RGBW, "NEO_SK6812_STRIP_RGBW"),                    \
             X(8, NEO_SK6812_STRIP_GRBW, "NEO_SK6812_STRIP_GRBW")                   \
 
-
+//WS2811_STRIP_GRB
 #define LED_STRIPTYPE_ENUM(type, name, str) name = type
 #define LED_STRIPTYPE_STRING(type, name, str) str
 
@@ -217,7 +217,7 @@ public:
     ~Ws2811Wrapper();
 
     //You Must Init The Matrix before use
-    ws2811_return_t initStrip(u_int32_t width, u_int32_t hight, LedStripType stripType, int dma, int gpio);
+    ws2811_return_t initStrip(u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio);
 
     //Clears the strip (Turns LEDS off.
     ws2811_return_t clearLeds(bool render = true);
@@ -227,12 +227,15 @@ public:
     // This Will Move the Matric into the leds for rendering with core
     ws2811_return_t show();
 
-    // Selv commenting code here
-    void setPixelColor(u_int32_t width, u_int32_t hight, ws2811_led_t color);
+    // Self commenting code here
+    void setPixelColor(u_int32_t row, u_int32_t pixal, ws2811_led_t color);
+    void setPixelColor(u_int32_t pixal, ws2811_led_t color);
     void setPixelColor(ws2811_led_t color);
-    void setPixelColor(u_int32_t width, u_int32_t hight, u_int8_t red, u_int8_t green, u_int8_t blue);
-    void setPixelColor(u_int32_t width, u_int32_t hight, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
-    ws2811_led_t getPixelColor(u_int32_t width, u_int32_t hight);
+    void setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue);
+    void setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
+    ws2811_led_t getPixelColor(u_int32_t row, u_int32_t pixal);
+    ws2811_led_t getPixelColor(u_int32_t pixal);
+
 
     // You can only specify for the complete strip.
     // Some LEDStrips all for a whitness (think luminosoty(sic))
@@ -250,10 +253,13 @@ public:
     //not set the leds of off (I simply call the clear_leds();
     void setClearOnExit(bool clear);
 
+    //Used for matrix that alernates rows.
+    void matrixraise(void);
+
     //Self commenting code
     u_int32_t getNumberLeds();
-    u_int32_t getHight();
-    u_int32_t getWidth();
+    u_int32_t getColumns();
+    u_int32_t getRows();
 
 
     //On functions that return a ws2811_return_t, this will return a human readable error code back.
@@ -281,6 +287,7 @@ private:
     void cleanUp();
 
 
+
     //Private is private we don't talk about them.
 private:
     ws2811_led_t *_matrix;
@@ -289,8 +296,8 @@ private:
     int _gpio;
     bool _useGamaCorrection;
     u_int32_t _numLights;
-    u_int32_t _height;
-    u_int32_t _width;
+    u_int32_t _columns;
+    u_int32_t _rows;
     LedStripType _stripType;
     bool _clearOnExit;
 
