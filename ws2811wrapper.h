@@ -217,7 +217,7 @@ public:
     ~Ws2811Wrapper();
 
     //You Must Init The Matrix before use
-    ws2811_return_t initStrip(u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio);
+    ws2811_return_t initStrip(short channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio);
 
     //Clears the strip (Turns LEDS off.
     ws2811_return_t clearLeds(bool render = true);
@@ -233,6 +233,7 @@ public:
     void setPixelColor(ws2811_led_t color);
     void setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue);
     void setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
+    u_int32_t getPixelIndex(u_int32_t row, u_int32_t pixal);
     ws2811_led_t getPixelColor(u_int32_t row, u_int32_t pixal);
     ws2811_led_t getPixelColor(u_int32_t pixal);
 
@@ -281,25 +282,23 @@ public:
     static void waitSec(u_int32_t sec);
     static void waitMillSec(u_int32_t mill);
 
+    short getCurChannel() const;
+
+    void setCurChannel(short curChannel);
+
 private:
     //Internal
-    void setStripType();
+    void setStripType(LedStripType stripType, short channel);
     void cleanUp();
-
-
 
     //Private is private we don't talk about them.
 private:
-    ws2811_led_t *_matrix;
+    ws2811_led_t *_matrix[2];
     ws2811_t    _ledstring;
-    int _dma;
-    int _gpio;
-    bool _useGamaCorrection;
-    u_int32_t _numLights;
-    u_int32_t _columns;
-    u_int32_t _rows;
-    LedStripType _stripType;
+    u_int32_t _columns[2];
+    u_int32_t _rows[2];
     bool _clearOnExit;
+    short _curChannel;
 
 };
 
