@@ -260,7 +260,7 @@ void Ws2811Wrapper::setPixelColor(ws2811_led_t color)
 
 u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixal)
 {
-    return (row % 2 == 0) ? ((row * _columns[_curChannel]) + pixal)  : (((row * _columns[_curChannel])) + ((_columns[_curChannel] - 1) - pixal));
+    return (row % 2 != 0) ? ((row * _columns[_curChannel]) + pixal)  : (((row * _columns[_curChannel])) + ((_columns[_curChannel] - 1) - pixal));
 }
 
 
