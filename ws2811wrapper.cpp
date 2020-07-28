@@ -12,28 +12,32 @@ Ws2811Wrapper::Ws2811Wrapper()
     _ledstring.freq = WS2811_TARGET_FREQ;
     _ledstring.dmanum =  0;
 
-    _ledstring.channel[0].strip_type  = WS2811_STRIP_RGB;
-    _ledstring.channel[0].gpionum = 0;
-    _ledstring.channel[0].count = 0;
-    _ledstring.channel[0].invert = 0;
-    _ledstring.channel[0].brightness = 127;
-    _ledstring.channel[0].leds = nullptr;
-    _ledstring.channel[0].gamma = nullptr;
+    _ledstring.channel[Channel1].strip_type  = WS2811_STRIP_RGB;
+    _ledstring.channel[Channel1].gpionum = 0;
+    _ledstring.channel[Channel1].count = 0;
+    _ledstring.channel[Channel1].invert = 0;
+    _ledstring.channel[Channel1].brightness = 127;
+    _ledstring.channel[Channel1].leds = nullptr;
+    _ledstring.channel[Channel1].gamma = nullptr;
 
 
-    _ledstring.channel[1].strip_type  = WS2811_STRIP_RGB;
-    _ledstring.channel[1].gpionum = 0;
-    _ledstring.channel[1].count = 0;
-    _ledstring.channel[1].invert = 0;
-    _ledstring.channel[1].brightness = 127;
-    _ledstring.channel[1].leds = nullptr;
-    _ledstring.channel[1].gamma = nullptr;
+    _ledstring.channel[Channel2].strip_type  = WS2811_STRIP_RGB;
+    _ledstring.channel[Channel2].gpionum = 0;
+    _ledstring.channel[Channel2].count = 0;
+    _ledstring.channel[Channel2].invert = 0;
+    _ledstring.channel[Channel2].brightness = 127;
+    _ledstring.channel[Channel2].leds = nullptr;
+    _ledstring.channel[Channel2].gamma = nullptr;
 
-    _curChannel = 0;
+    _stripTypes[Channel1] = NEO_WS2811_STRIP_RGB;
+    _stripTypes[Channel2] = NEO_WS2811_STRIP_RGB;
+
+    _curChannel = Channel1;
     _clearOnExit = true;
 
-    _matrix[0] = nullptr;
-    _matrix[1] = nullptr;
+    _matrix[Channel1] = nullptr;
+    _matrix[Channel2] = nullptr;
+
 }
 
 Ws2811Wrapper::~Ws2811Wrapper()
@@ -83,46 +87,47 @@ void Ws2811Wrapper::setCustomGammaCorrection(double gammaFactor)
 
 void Ws2811Wrapper::cleanUp()
 {
-    if(_matrix[0] != nullptr)
+    if(_matrix[Channel1] != nullptr)
     {
-        delete [] _matrix[0];
-        _matrix[0] = nullptr;
+        delete [] _matrix[Channel1];
+        _matrix[Channel1] = nullptr;
     }
 
-    if(_matrix[1] != nullptr)
+    if(_matrix[Channel2] != nullptr)
     {
-        delete [] _matrix[1];
-        _matrix[1] = nullptr;
+        delete [] _matrix[Channel2];
+        _matrix[Channel2] = nullptr;
     }
 
     ws2811_fini(&_ledstring);
 
 }
 
-void Ws2811Wrapper::setCurChannel(short curChannel)
+void Ws2811Wrapper::setCurChannel(ws2811Channel curChannel)
 {
     _curChannel = curChannel;
 }
 
-short Ws2811Wrapper::getCurChannel() const
+ws2811Channel Ws2811Wrapper::getCurChannel() const
 {
     return _curChannel;
 }
 
-ws2811_return_t Ws2811Wrapper::initStrip(short channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio)
+ws2811_return_t Ws2811Wrapper::initStrip(ws2811Channel channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio)
 {
     ws2811_return_t retval = WS2811_SUCCESS;
-
-    if(_ledstring.channel[channel].count > 0)
-        cleanUp();
 
     _curChannel = channel;
     _columns[_curChannel] = columns;
     _rows[_curChannel] = rows;
 
-    _ledstring.channel[channel].count = _rows[_curChannel] * _columns[_curChannel];
+    if(_ledstring.channel[_curChannel].count > 0)
+        cleanUp();
 
-    setStripType(stripType, channel);
+
+    _ledstring.channel[_curChannel].count = _rows[_curChannel] * _columns[_curChannel];
+
+    setStripType(stripType);
 
     switch (gpio)
     {
@@ -130,7 +135,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(short channel, u_int32_t rows, u_int32_
         case 18:
         case 40:
         case 52:
-            _ledstring.channel[channel].gpionum = gpio;
+            _ledstring.channel[_curChannel].gpionum = gpio;
             break;
 
         default:
@@ -159,41 +164,43 @@ ws2811_return_t Ws2811Wrapper::initStrip(short channel, u_int32_t rows, u_int32_
     return retval;
 }
 
-void Ws2811Wrapper::setStripType(LedStripType stripType, short channel)
+void Ws2811Wrapper::setStripType(LedStripType stripType)
 {
+    _stripTypes[_curChannel] = stripType;
+
     switch(stripType)
     {
 
     case NEO_WS2811_STRIP_RGB:
-        _ledstring.channel[channel].strip_type = WS2811_STRIP_RGB;
+        _ledstring.channel[_curChannel].strip_type = WS2811_STRIP_RGB;
         break;
 
     case NEO_WS2811_STRIP_RBG:
-        _ledstring.channel[channel].strip_type = WS2811_STRIP_RBG;
+        _ledstring.channel[_curChannel].strip_type = WS2811_STRIP_RBG;
         break;
 
     case NEO_WS2811_STRIP_GRB:
-        _ledstring.channel[channel].strip_type = WS2811_STRIP_GRB;
+        _ledstring.channel[_curChannel].strip_type = WS2811_STRIP_GRB;
         break;
 
     case NEO_WS2811_STRIP_GBR:
-        _ledstring.channel[channel].strip_type = WS2811_STRIP_GBR;
+        _ledstring.channel[_curChannel].strip_type = WS2811_STRIP_GBR;
         break;
 
     case NEO_WS2811_STRIP_BRG:
-        _ledstring.channel[channel].strip_type = WS2811_STRIP_BRG;
+        _ledstring.channel[_curChannel].strip_type = WS2811_STRIP_BRG;
         break;
 
     case NEO_WS2811_STRIP_BGR:
-        _ledstring.channel[channel].strip_type = WS2811_STRIP_BGR;
+        _ledstring.channel[_curChannel].strip_type = WS2811_STRIP_BGR;
         break;
 
     case NEO_SK6812_STRIP_RGBW:
-        _ledstring.channel[channel].strip_type = SK6812_STRIP_RGBW;
+        _ledstring.channel[_curChannel].strip_type = SK6812_STRIP_RGBW;
         break;
 
     case NEO_SK6812_STRIP_GRBW:
-        _ledstring.channel[channel].strip_type = SK6812_STRIP_GRBW;
+        _ledstring.channel[_curChannel].strip_type = SK6812_STRIP_GRBW;
         break;
 
     default:
@@ -252,7 +259,7 @@ void Ws2811Wrapper::setPixelColor(ws2811_led_t color)
     {
         for (x = 0; x < _columns[_curChannel]; x++)
         {
-            _matrix[_curChannel][ (y * _columns[_curChannel]) + x] = color;
+            _matrix[_curChannel][ (y * _columns[_curChannel]) + x] = Color(Red(color), Green(color), Blue(color));
         }
     }
 
@@ -266,13 +273,13 @@ u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixal)
 
 void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixal, ws2811_led_t color)
 {
-   _matrix[_curChannel][getPixelIndex(row, pixal)] = color;
+   _matrix[_curChannel][getPixelIndex(row, pixal)] = Color(Red(color), Green(color), Blue(color));
 
 }
 
 void Ws2811Wrapper::setPixelColor(u_int32_t pixal, ws2811_led_t color)
 {
-    _matrix[_curChannel][pixal] = color;
+    _matrix[_curChannel][pixal] = Color(Red(color), Green(color), Blue(color));
 }
 
 
@@ -325,12 +332,42 @@ u_int32_t Ws2811Wrapper::getRows()
 
 ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue)
 {
-    return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+
+    switch(_stripTypes[_curChannel])
+    {
+        case NEO_WS2811_STRIP_RGB:
+            return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+
+        case NEO_WS2811_STRIP_RBG:
+            return ((u_int32_t) red << 16) | ((u_int32_t) blue << 8) | green;
+
+        case NEO_WS2811_STRIP_GRB:
+             return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+
+        default:
+             return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+    }
+
+
 }
 
 ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
 {
-    return ((u_int32_t) white << 24) | ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+    switch(_stripTypes[_curChannel])
+    {
+        case NEO_SK6812_STRIP_RGBW:
+            return ((u_int32_t) white << 24) | ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+
+
+        case NEO_SK6812_STRIP_GRBW:
+             return ((u_int32_t) white << 24) | ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+
+        default:
+             return ((u_int32_t) white << 24) | ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+    }
+
+
+
 }
 
 ws2811_led_t Ws2811Wrapper::Wheel(u_int8_t wheelPos)

@@ -206,6 +206,13 @@ typedef enum {
     } HTMLColorCode;
 
 
+
+typedef enum {
+    Channel1 = 0,
+    Channel2 = 1
+
+} ws2811Channel;
+
 class  Ws2811Wrapper
 {
 public:
@@ -217,7 +224,7 @@ public:
     ~Ws2811Wrapper();
 
     //You Must Init The Matrix before use
-    ws2811_return_t initStrip(short channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio);
+    ws2811_return_t initStrip(ws2811Channel channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio);
 
     //Clears the strip (Turns LEDS off.
     ws2811_return_t clearLeds(bool render = true);
@@ -267,28 +274,28 @@ public:
     static const char * ws2811_get_return_t_str(const ws2811_return_t state);
 
     //Used for converting the RGB into a useul number for the matrix colors.
-    //These staic methods are helps as inputs to
-    static ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue);
-    static ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
-    static ws2811_led_t Wheel(u_int8_t wheelPos);
-    static int Red(ws2811_led_t color);
-    static int  Green(ws2811_led_t color);
-    static int  Blue(ws2811_led_t color);
-    static ws2811_led_t DimColor(ws2811_led_t color);
-    static ws2811_led_t BrightenColor(ws2811_led_t color);
+
+    ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue);
+    ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
+    ws2811_led_t Wheel(u_int8_t wheelPos);
+    int Red(ws2811_led_t color);
+    int  Green(ws2811_led_t color);
+    int  Blue(ws2811_led_t color);
+    ws2811_led_t DimColor(ws2811_led_t color);
+    ws2811_led_t BrightenColor(ws2811_led_t color);
 
 
 
     static void waitSec(u_int32_t sec);
     static void waitMillSec(u_int32_t mill);
 
-    short getCurChannel() const;
+    ws2811Channel getCurChannel() const;
 
-    void setCurChannel(short curChannel);
+    void setCurChannel(ws2811Channel curChannel);
 
 private:
     //Internal
-    void setStripType(LedStripType stripType, short channel);
+    void setStripType(LedStripType stripType);
     void cleanUp();
 
     //Private is private we don't talk about them.
@@ -297,8 +304,9 @@ private:
     ws2811_t    _ledstring;
     u_int32_t _columns[2];
     u_int32_t _rows[2];
+    LedStripType _stripTypes[2];
     bool _clearOnExit;
-    short _curChannel;
+    ws2811Channel _curChannel;
 
 };
 
