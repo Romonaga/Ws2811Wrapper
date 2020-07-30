@@ -358,31 +358,42 @@ u_int32_t Ws2811Wrapper::getRows()
     return _rows[_curChannel];
 }
 
+
+
 ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue)
 {
 
-    switch(_stripTypes[_curChannel])
+    return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+
+   /* switch(_stripTypes[_curChannel])
     {
         case NEO_WS2811_STRIP_RGB:
-            return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+           return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
 
         case NEO_WS2811_STRIP_RBG:
             return ((u_int32_t) red << 16) | ((u_int32_t) blue << 8) | green;
 
-        case NEO_WS2811_STRIP_GRB:
-            return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+        case NEO_WS2811_STRIP_BRG:
+            return ((u_int32_t) blue << 16) | ((u_int32_t) red << 8) | green;
 
+        case NEO_WS2811_STRIP_GRB:
+            return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+
+        case NEO_WS2811_STRIP_BGR:
+            return ((u_int32_t) blue << 16) | ((u_int32_t) green << 8) | red;
 
         default:
-             return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+             return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
     }
-
+*/
 
 }
 
 ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
 {
-    switch(_stripTypes[_curChannel])
+    return ((u_int32_t) white << 24) | ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+
+    /*switch(_stripTypes[_curChannel])
     {
         case NEO_SK6812_STRIP_RGBW:
             return ((u_int32_t) white << 24) | ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
@@ -395,7 +406,7 @@ ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue, u
              return ((u_int32_t) white << 24) | ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
     }
 
-
+*/
 
 }
 
