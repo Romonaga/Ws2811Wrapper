@@ -4,6 +4,8 @@
 #include <time.h>
 
 
+#include <iostream>
+
 Ws2811Wrapper::Ws2811Wrapper()
 {
 
@@ -113,13 +115,14 @@ ws2811Channel Ws2811Wrapper::getCurChannel() const
     return _curChannel;
 }
 
-ws2811_return_t Ws2811Wrapper::initStrip(ws2811Channel channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio)
+ws2811_return_t Ws2811Wrapper::initStrip(ws2811Channel channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio, matrixDirection matrixDir)
 {
     ws2811_return_t retval = WS2811_SUCCESS;
 
     _curChannel = channel;
     _columns[_curChannel] = columns;
     _rows[_curChannel] = rows;
+    _matrixDirection[_curChannel] = matrixDir;
 
     if(_ledstring.channel[_curChannel].count > 0)
         cleanUp();
@@ -267,7 +270,32 @@ void Ws2811Wrapper::setPixelColor(ws2811_led_t color)
 
 u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixal)
 {
-    return (row % 2 != 0) ? ((row * _columns[_curChannel]) + pixal)  : (((row * _columns[_curChannel])) + ((_columns[_curChannel] - 1) - pixal));
+    u_int32_t index = 0;
+
+    switch(_matrixDirection[_curChannel])
+    {
+        case TopLeftRight:
+            index = (row % 2 != 0) ? ((row * _columns[_curChannel]) + pixal)  : (((row * _columns[_curChannel])) + ((_columns[_curChannel] - 1) - pixal));
+        break;
+
+        case TopRightDown:
+            index = (pixal % 2 == 0) ? (pixal * _rows[_curChannel]) + row : (pixal * _rows[_curChannel]) + (_rows[_curChannel] - 1) - row;
+            break;
+
+        case BottomRightUp:
+            index = (pixal % 2 != 0) ? (pixal * _rows[_curChannel]) + row : (pixal * _rows[_curChannel]) + (_rows[_curChannel] - 1) - row;
+        break;
+
+        case TopRightLeft:
+            index = (row % 2 == 0) ? ((row * _columns[_curChannel]) + pixal)  : (((row * _columns[_curChannel])) + ((_columns[_curChannel] - 1) - pixal));
+        break;
+    }
+
+  //fprintf(stderr,"getPixalIndex row: %d col: %d, index: %d\n",row, pixal, index);
+
+    return index;
+
+
 }
 
 
@@ -336,16 +364,17 @@ ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue)
     switch(_stripTypes[_curChannel])
     {
         case NEO_WS2811_STRIP_RGB:
-            return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+            return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
 
         case NEO_WS2811_STRIP_RBG:
             return ((u_int32_t) red << 16) | ((u_int32_t) blue << 8) | green;
 
         case NEO_WS2811_STRIP_GRB:
-             return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
+            return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+
 
         default:
-             return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
+             return ((u_int32_t) green << 16) | ((u_int32_t) red << 8) | blue;
     }
 
 

@@ -213,6 +213,13 @@ typedef enum {
 
 } ws2811Channel;
 
+typedef enum {
+    TopLeftRight = 1,
+    TopRightDown = 2,
+    BottomRightUp = 3,
+    TopRightLeft = 4
+} matrixDirection;
+
 class  Ws2811Wrapper
 {
 public:
@@ -224,7 +231,7 @@ public:
     ~Ws2811Wrapper();
 
     //You Must Init The Matrix before use
-    ws2811_return_t initStrip(ws2811Channel channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio);
+    ws2811_return_t initStrip(ws2811Channel channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio, matrixDirection  matrixDir);
 
     //Clears the strip (Turns LEDS off.
     ws2811_return_t clearLeds(bool render = true);
@@ -305,6 +312,7 @@ private:
     u_int32_t _columns[2];
     u_int32_t _rows[2];
     LedStripType _stripTypes[2];
+    matrixDirection _matrixDirection[2];
     bool _clearOnExit;
     ws2811Channel _curChannel;
 
