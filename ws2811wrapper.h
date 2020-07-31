@@ -268,8 +268,6 @@ public:
     //not set the leds of off (I simply call the clear_leds();
     void setClearOnExit(bool clear);
 
-    //Used for matrix that alernates rows.
-    void matrixraise(void);
 
     //Self commenting code
     u_int32_t getNumberLeds();
@@ -278,7 +276,7 @@ public:
 
 
     //On functions that return a ws2811_return_t, this will return a human readable error code back.
-    static const char * ws2811_get_return_t_str(const ws2811_return_t state);
+    static const char * getws2811ErrorString(const ws2811_return_t state);
 
     //Used for converting the RGB into a useul number for the matrix colors.
     ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue);

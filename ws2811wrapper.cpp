@@ -52,19 +52,6 @@ Ws2811Wrapper::~Ws2811Wrapper()
 
 }
 
-void Ws2811Wrapper::matrixraise(void)
-{
-    u_int32_t x, y;
-
-    for (y = 0; y < (_columns[_curChannel] - 1); y++)
-    {
-        for (x = 0; x < _rows[_curChannel]; x++)
-        {
-            _matrix[_curChannel][y * _rows[_curChannel] + x] = _matrix[_curChannel][(y + 1)*_rows[_curChannel] + _rows[_curChannel] - x - 1];
-        }
-    }
-}
-
 
 ws2811_return_t Ws2811Wrapper::show()
 {
@@ -212,7 +199,7 @@ void Ws2811Wrapper::setStripType(LedStripType stripType)
     }
 }
 
-const char * Ws2811Wrapper::ws2811_get_return_t_str(const ws2811_return_t state)
+const char * Ws2811Wrapper::getws2811ErrorString(const ws2811_return_t state)
 {
     const unsigned int index = -state;
     static const char * const ret_state_str[] = { WS2811_RETURN_STATES(WS2811_RETURN_STATES_STRING) };
@@ -275,7 +262,7 @@ u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixal)
     switch(_matrixDirection[_curChannel])
     {
         case TopLeftRight:
-            index = (row % 2 != 0) ? ((row * _columns[_curChannel]) + pixal)  : (((row * _columns[_curChannel])) + ((_columns[_curChannel] - 1) - pixal));
+            index = (row % 2 != 0) ? ((row * _columns[_curChannel]) + pixal)  : (row * _columns[_curChannel]) + ((_columns[_curChannel] - 1) - pixal);
         break;
 
         case TopRightDown:
@@ -287,7 +274,7 @@ u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixal)
         break;
 
         case TopRightLeft:
-            index = (row % 2 == 0) ? ((row * _columns[_curChannel]) + pixal)  : (((row * _columns[_curChannel])) + ((_columns[_curChannel] - 1) - pixal));
+            index = (row % 2 == 0) ? ((row * _columns[_curChannel]) + pixal)  : (row * _columns[_curChannel]) + ((_columns[_curChannel] - 1) - pixal);
         break;
     }
 
@@ -438,4 +425,9 @@ void Ws2811Wrapper::waitMillSec(u_int32_t mill)
     deadline.tv_nsec = (mill * 1000000) % 1000000000;
 
     clock_nanosleep(CLOCK_REALTIME, 0 , &deadline, NULL);
+}
+
+const char * getws2811ErrorString(const ws2811_return_t state)
+{
+    return ws2811_get_return_t_str(state);
 }
