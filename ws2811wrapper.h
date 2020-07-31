@@ -11,27 +11,6 @@
 #include "pwm.h"
 #include "ws2811.h"
 
-#define LED_STRIPTYPE(X)                                                  \
-            X(1, NEO_WS2811_STRIP_RGB, "NEO_WS2811_STRIP_RGB"),                           \
-            X(2, NEO_WS2811_STRIP_RBG, "NEO_WS2811_STRIP_RBG"),                              \
-            X(3, NEO_WS2811_STRIP_GRB, "NEO_WS2811_STRIP_GRB"),                                    \
-            X(4, NEO_WS2811_STRIP_GBR, "NEO_WS2811_STRIP_GBR"),                        \
-            X(5, NEO_WS2811_STRIP_BRG, "NEO_WS2811_STRIP_BRG"),                          \
-            X(6, NEO_WS2811_STRIP_BGR, "NEO_WS2811_STRIP_BGR"),                    \
-            X(7, NEO_SK6812_STRIP_RGBW, "NEO_SK6812_STRIP_RGBW"),                    \
-            X(8, NEO_SK6812_STRIP_GRBW, "NEO_SK6812_STRIP_GRBW")                   \
-
-//WS2811_STRIP_GRB
-#define LED_STRIPTYPE_ENUM(type, name, str) name = type
-#define LED_STRIPTYPE_STRING(type, name, str) str
-
-typedef enum {
-    LED_STRIPTYPE(LED_STRIPTYPE_ENUM),
-
-    LED_STRIPTYPE_ENUM_COUNT
-} LedStripType;
-
-
 /*
 
 #define LIGHTSCOLORS(X)                                                  \
@@ -207,6 +186,27 @@ typedef enum {
 
 
 
+#define LED_STRIPTYPE(X)                                                  \
+            X(1, NEO_WS2811_STRIP_RGB, "NEO_WS2811_STRIP_RGB"),                           \
+            X(2, NEO_WS2811_STRIP_RBG, "NEO_WS2811_STRIP_RBG"),                              \
+            X(3, NEO_WS2811_STRIP_GRB, "NEO_WS2811_STRIP_GRB"),                                    \
+            X(4, NEO_WS2811_STRIP_GBR, "NEO_WS2811_STRIP_GBR"),                        \
+            X(5, NEO_WS2811_STRIP_BRG, "NEO_WS2811_STRIP_BRG"),                          \
+            X(6, NEO_WS2811_STRIP_BGR, "NEO_WS2811_STRIP_BGR"),                    \
+            X(7, NEO_SK6812_STRIP_RGBW, "NEO_SK6812_STRIP_RGBW"),                    \
+            X(8, NEO_SK6812_STRIP_GRBW, "NEO_SK6812_STRIP_GRBW")                   \
+
+//WS2811_STRIP_GRB
+#define LED_STRIPTYPE_ENUM(type, name, str) name = type
+#define LED_STRIPTYPE_STRING(type, name, str) str
+
+typedef enum {
+    LED_STRIPTYPE(LED_STRIPTYPE_ENUM),
+
+    LED_STRIPTYPE_ENUM_COUNT
+} LedStripType;
+
+
 typedef enum {
     Channel1 = 0,
     Channel2 = 1
@@ -281,7 +281,6 @@ public:
     static const char * ws2811_get_return_t_str(const ws2811_return_t state);
 
     //Used for converting the RGB into a useul number for the matrix colors.
-
     ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue);
     ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
     ws2811_led_t Wheel(u_int8_t wheelPos);
