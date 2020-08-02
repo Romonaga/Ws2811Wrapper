@@ -10,7 +10,7 @@ Well, I no longer consider this just a "simple" wrapper around rpi_ws281x. It no
 While most people it seems do not develop in c or c++, a few of us still prefer it and find it more comfortable. So what does this "wrapper" do?
 
 * The most important feature is the Matrix support that is built in.  I found when testing different matrix's that they all had different start spots.  This wrapper, will overcome this.  Please review the initStrip.
-* The underlying lib rpi_ws281x from that group of developers, have support for 2 channel's.   This wrapper will take advantage of this, and manage the 2 channels programmatic. 
+* The underlying lib rpi_ws281x from that group of developers, has support for 2 channel's.   This wrapper will take advantage of this, and manage the 2 channels programmatic. 
 * Many of the color conversion's you will need.
 
 
