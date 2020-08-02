@@ -7,7 +7,7 @@ As this uses scons, and I have little understanding of it, I simply copied the f
 # *** UPDATE ***
 Well, I no longer consider this just a "simple" wrapper around rpi_ws281x. It now provides some of the same features you see in higher level languages.
 
-While the rpi_ws281x is  afantastic lib on its own, it does lack a bit of lets say user-friendliness. It has and always will be a base lib for others to build on.  When I was looking to use this in my projects, I could not find a decent c++ lib that provided some of the same functionality I found in the Arduino world.
+While the rpi_ws281x is  a fantastic lib on its own, it does lack a bit of lets say user-friendliness. It has and always will be a base lib for others to build on.  When I was looking to use this in my projects, I could not find a decent c++ lib that provided some of the same functionality I found in the Arduino world.
 As a result, several years ago I developed this for my own projects. Recently I have posted it here, hoping others will find it useful.
 
 While most people it seems do not develop in c or c++, a few of us still prefer it and find it more comfortable. So what does this "wrapper" do?
