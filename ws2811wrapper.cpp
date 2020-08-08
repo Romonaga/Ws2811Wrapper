@@ -285,38 +285,45 @@ u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixal)
 
 }
 
+void Ws2811Wrapper::setPixal(u_int32_t pixal, ws2811_led_t color)
+{
+    if( pixal > getNumberLeds() - 1)  return;
+
+    _matrix[_curChannel][pixal] = color;
+
+}
 
 void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixal, ws2811_led_t color)
 {
-   _matrix[_curChannel][getPixelIndex(row, pixal)] = Color(Red(color), Green(color), Blue(color));
-
+   setPixal(getPixelIndex(row, pixal), color );
 }
 
 void Ws2811Wrapper::setPixelColor(u_int32_t pixal, ws2811_led_t color)
 {
-    _matrix[_curChannel][pixal] = Color(Red(color), Green(color), Blue(color));
+   setPixal(pixal, color);
 }
 
 
 
 void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue)
 {
-
-   _matrix[_curChannel][getPixelIndex(row, pixal)] = Color(red, green, blue);
+    setPixal(getPixelIndex(row, pixal), Color(red, green, blue));
 }
 
 void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
 {
-    _matrix[_curChannel][getPixelIndex(row, pixal)] = Color(red, green, blue, white);
+    setPixal(getPixelIndex(row, pixal), Color(red, green, blue, white));
 }
 
 ws2811_led_t Ws2811Wrapper::getPixelColor(u_int32_t row, u_int32_t pixal)
 {
-    return _matrix[_curChannel][getPixelIndex(row, pixal)];
+    return getPixelColor(getPixelIndex(row, pixal));
 }
 
 ws2811_led_t Ws2811Wrapper::getPixelColor(u_int32_t pixal)
 {
+    if( pixal > getNumberLeds() - 1)  return 0;
+
     return _matrix[_curChannel][pixal];
 }
 

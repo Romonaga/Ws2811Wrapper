@@ -300,6 +300,7 @@ public:
 private:
     //Internal
     void setStripType(LedStripType stripType);
+    void setPixal(u_int32_t pixal, ws2811_led_t color);
     void cleanUp();
 
     //Private is private we don't talk about them.
