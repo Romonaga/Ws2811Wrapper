@@ -11,6 +11,11 @@
 #include "pwm.h"
 #include "ws2811.h"
 
+#include <led-matrix.h>
+
+using namespace rgb_matrix;
+
+
 /*
 
 #define LIGHTSCOLORS(X)                                                  \
@@ -187,6 +192,7 @@ typedef enum {
 
 
 #define LED_STRIPTYPE(X)                                                  \
+            X(0, NONE, "No Strip"),                           \
             X(1, NEO_WS2811_STRIP_RGB, "NEO_WS2811_STRIP_RGB"),                           \
             X(2, NEO_WS2811_STRIP_RBG, "NEO_WS2811_STRIP_RBG"),                              \
             X(3, NEO_WS2811_STRIP_GRB, "NEO_WS2811_STRIP_GRB"),                                    \
@@ -194,7 +200,8 @@ typedef enum {
             X(5, NEO_WS2811_STRIP_BRG, "NEO_WS2811_STRIP_BRG"),                          \
             X(6, NEO_WS2811_STRIP_BGR, "NEO_WS2811_STRIP_BGR"),                    \
             X(7, NEO_SK6812_STRIP_RGBW, "NEO_SK6812_STRIP_RGBW"),                    \
-            X(8, NEO_SK6812_STRIP_GRBW, "NEO_SK6812_STRIP_GRBW")                   \
+            X(8, NEO_SK6812_STRIP_GRBW, "NEO_SK6812_STRIP_GRBW"),                   \
+            X(9, MATRIX_2121, "2121 SMD Matrix Board")                \
 
 //WS2811_STRIP_GRB
 #define LED_STRIPTYPE_ENUM(type, name, str) name = type
@@ -217,8 +224,18 @@ typedef enum {
     TopLeftRight = 1,
     TopRightDown = 2,
     BottomRightUp = 3,
-    TopRightLeft = 4
+    TopRightLeft = 4,
+    MatrixRightLeft = 5
 } matrixDirection;
+
+typedef enum {
+    NoWiring = 0,
+    Regular = 1,
+    Adafruithat = 2,
+    Adafruithatpwm = 3
+} Wiring2121;
+
+
 
 class  Ws2811Wrapper
 {
@@ -232,6 +249,7 @@ public:
 
     //You Must Init The Matrix before use
     ws2811_return_t initStrip(ws2811Channel channel, u_int32_t rows, u_int32_t columns, LedStripType stripType, int dma, int gpio, matrixDirection  matrixDir);
+    ws2811_return_t initStrip(u_int32_t rows, u_int32_t columns, LedStripType stripType, matrixDirection matrixDir, Wiring2121 wiring);
 
     //Clears the strip (Turns LEDS off.
     ws2811_return_t clearLeds(bool render = true);
@@ -242,14 +260,14 @@ public:
     ws2811_return_t show();
 
     // Self commenting code here
-    void setPixelColor(u_int32_t row, u_int32_t pixal, ws2811_led_t color);
-    void setPixelColor(u_int32_t pixal, ws2811_led_t color);
+    void setPixelColor(u_int32_t row, u_int32_t pixel, ws2811_led_t color);
+    void setPixelColor(u_int32_t pixel, ws2811_led_t color);
     void setPixelColor(ws2811_led_t color);
-    void setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue);
-    void setPixelColor(u_int32_t row, u_int32_t pixal, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
-    u_int32_t getPixelIndex(u_int32_t row, u_int32_t pixal);
-    ws2811_led_t getPixelColor(u_int32_t row, u_int32_t pixal);
-    ws2811_led_t getPixelColor(u_int32_t pixal);
+    void setPixelColor(u_int32_t row, u_int32_t pixel, u_int8_t red, u_int8_t green, u_int8_t blue);
+    void setPixelColor(u_int32_t row, u_int32_t pixel, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
+    u_int32_t getPixelIndex(u_int32_t row, u_int32_t pixel);
+    ws2811_led_t getPixelColor(u_int32_t row, u_int32_t pixel);
+    ws2811_led_t getPixelColor(u_int32_t pixel);
 
 
     // You can only specify for the complete strip.
@@ -300,7 +318,7 @@ public:
 private:
     //Internal
     void setStripType(LedStripType stripType);
-    void setPixal(u_int32_t pixal, ws2811_led_t color);
+    void setPixel(u_int32_t pixal, ws2811_led_t color);
     void cleanUp();
 
     //Private is private we don't talk about them.
@@ -311,8 +329,16 @@ private:
     u_int32_t _rows[2];
     LedStripType _stripTypes[2];
     matrixDirection _matrixDirection[2];
+    Wiring2121 _wiring[2];
+
     bool _clearOnExit;
     ws2811Channel _curChannel;
+
+   //EXP
+    RGBMatrix::Options _led_options;
+    rgb_matrix::RuntimeOptions _runtime;
+    RGBMatrix *_rgbMatrix;
+    FrameCanvas* _frame;
 
 };
 
