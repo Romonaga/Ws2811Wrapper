@@ -77,7 +77,7 @@ ws2811_return_t Ws2811Wrapper::show()
             for (uint32_t col  = 0; col  < _columns[_curChannel]; col++)
             {
                 led = (row * _columns[_curChannel]) + col;
-                _frame->SetPixel(row, col, Red(_matrix[_curChannel][led]), Green(_matrix[_curChannel][led]), Blue(_matrix[_curChannel][led]) );
+                _frame->SetPixel(col, row, Red(_matrix[_curChannel][led]), Green(_matrix[_curChannel][led]), Blue(_matrix[_curChannel][led]) );
             }
         }
 
@@ -169,12 +169,40 @@ ws2811_return_t Ws2811Wrapper::initStrip(ws2811Channel channel, u_int32_t rows, 
 
     if (retval == WS2811_SUCCESS)
     {
-        _matrix[_curChannel] =  new ws2811_led_t[sizeof(ws2811_led_t) * _rows[_curChannel] * _columns[_curChannel]];
+        _matrix[_curChannel] =  new ws2811_led_t[sizeof(ws2811_led_t) * (_rows[_curChannel] * _columns[_curChannel])];
         retval =  ws2811_init(&_ledstring);
     }
 
 
     return retval;
+}
+
+static void PrintOptions(const RGBMatrix::Options &o) {
+#define P_INT(val) fprintf(stderr, "%s : %d\n", #val, o.val)
+#define P_STR(val) fprintf(stderr, "%s : %s\n", #val, o.val)
+#define P_BOOL(val) fprintf(stderr, "%s : %s\n", #val, o.val ? "true":"false")
+  P_STR(hardware_mapping);
+  P_INT(rows);
+  P_INT(cols);
+  P_INT(chain_length);
+  P_INT(parallel);
+  P_INT(pwm_bits);
+  P_INT(pwm_lsb_nanoseconds);
+  P_INT(pwm_dither_bits);
+  P_INT(brightness);
+  P_INT(scan_mode);
+  P_INT(row_address_type);
+  P_INT(multiplexing);
+  P_BOOL(disable_hardware_pulsing);
+  P_BOOL(show_refresh_rate);
+  P_BOOL(inverse_colors);
+  P_STR(led_rgb_sequence);
+  P_STR(pixel_mapper_config);
+  P_STR(panel_type);
+  P_INT(limit_refresh_rate_hz);
+#undef P_INT
+#undef P_STR
+#undef P_BOOL
 }
 
 ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedStripType stripType, matrixDirection matrixDir, Wiring2121 wiring)
@@ -211,19 +239,19 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
 
     _led_options.pwm_bits = 7;
 
+
     _led_options.rows = rows;
     _led_options.cols = columns;
     _led_options.chain_length = 1;
     _led_options.parallel = 1;
+    _led_options.multiplexing = 0;
     _led_options.show_refresh_rate = false;
     _runtime.drop_privileges = -1;
-    _runtime.gpio_slowdown = 1;
+    _runtime.gpio_slowdown = 5;
     //_runtime.daemon = 1;
     _runtime.do_gpio_init = true;
-/*
- *
- * --led-pwm-dither-bits=1 --led-pwm-bits=7*/
 
+    PrintOptions(_led_options);
     _matrixDirection[_curChannel] = matrixDir;
 
     _rgbMatrix = CreateMatrixFromOptions(_led_options, _runtime);
@@ -233,8 +261,8 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
 
      if (retval == WS2811_SUCCESS)
      {
-         _frame  = _rgbMatrix->SwapOnVSync(nullptr);
-         _matrix[_curChannel] =  new ws2811_led_t[sizeof(ws2811_led_t) * _rows[_curChannel] * _columns[_curChannel]];
+         _frame  = _rgbMatrix->CreateFrameCanvas();
+         _matrix[_curChannel] =  new ws2811_led_t[sizeof(ws2811_led_t) * (_rows[_curChannel] * _columns[_curChannel])];
 
      }
     return retval;
@@ -332,7 +360,9 @@ void Ws2811Wrapper::setPixelColor(ws2811_led_t color)
     for (u_int32_t row = 0; row < _rows[_curChannel]; row++)
     {
         for (u_int32_t col = 0; col < _columns[_curChannel]; col++)
+        {
             _matrix[_curChannel][ (row * _columns[_curChannel]) + col] = color;
+        }
     }
 
 }
@@ -361,6 +391,11 @@ u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixel)
 
         case MatrixRightLeft:
              index = (row * _columns[_curChannel]) + ((_columns[_curChannel] - 1) - pixel);
+        break;
+
+        case MatrixTopDown:
+             index = (row * _columns[_curChannel]) + pixel;
+           //  fprintf(stderr,"row: %d col: %d index: %d\n",row, pixel, index);
         break;
     }
 

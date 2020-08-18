@@ -225,7 +225,8 @@ typedef enum {
     TopRightDown = 2,
     BottomRightUp = 3,
     TopRightLeft = 4,
-    MatrixRightLeft = 5
+    MatrixRightLeft = 5,
+    MatrixTopDown = 6
 } matrixDirection;
 
 typedef enum {
@@ -305,8 +306,6 @@ public:
     int  Blue(ws2811_led_t color);
     ws2811_led_t DimColor(ws2811_led_t color);
     ws2811_led_t BrightenColor(ws2811_led_t color);
-
-
 
     static void waitSec(u_int32_t sec);
     static void waitMillSec(u_int32_t mill);
