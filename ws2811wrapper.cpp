@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <time.h>
+#include <math.h>
 
 
 #include <iostream>
@@ -40,8 +41,10 @@ Ws2811Wrapper::Ws2811Wrapper()
     _matrix[Channel1] = nullptr;
     _matrix[Channel2] = nullptr;
 
-    _rgbMatrix = nullptr;
+    _useGammaCorrection[Channel1] = false;
+    _useGammaCorrection[Channel2] = false;
 
+    _rgbMatrix = nullptr;
 
 }
 
@@ -89,6 +92,8 @@ ws2811_return_t Ws2811Wrapper::show()
 
 void Ws2811Wrapper::setCustomGammaCorrection(double gammaFactor)
 {
+    _useGammaCorrection[_curChannel] = (gammaFactor > 0) ? true : false;
+
     if( (_stripTypes[Channel1] != NONE && _stripTypes[Channel2] != NONE) && (_stripTypes[Channel1] != MATRIX_2121 || _stripTypes[Channel2] != MATRIX_2121))
         ws2811_set_custom_gamma_factor(&_ledstring, gammaFactor);
     else if(_stripTypes[Channel1] == MATRIX_2121)
@@ -177,32 +182,33 @@ ws2811_return_t Ws2811Wrapper::initStrip(ws2811Channel channel, u_int32_t rows, 
     return retval;
 }
 
-static void PrintOptions(const RGBMatrix::Options &o) {
-#define P_INT(val) fprintf(stderr, "%s : %d\n", #val, o.val)
-#define P_STR(val) fprintf(stderr, "%s : %s\n", #val, o.val)
-#define P_BOOL(val) fprintf(stderr, "%s : %s\n", #val, o.val ? "true":"false")
-  P_STR(hardware_mapping);
-  P_INT(rows);
-  P_INT(cols);
-  P_INT(chain_length);
-  P_INT(parallel);
-  P_INT(pwm_bits);
-  P_INT(pwm_lsb_nanoseconds);
-  P_INT(pwm_dither_bits);
-  P_INT(brightness);
-  P_INT(scan_mode);
-  P_INT(row_address_type);
-  P_INT(multiplexing);
-  P_BOOL(disable_hardware_pulsing);
-  P_BOOL(show_refresh_rate);
-  P_BOOL(inverse_colors);
-  P_STR(led_rgb_sequence);
-  P_STR(pixel_mapper_config);
-  P_STR(panel_type);
-  P_INT(limit_refresh_rate_hz);
-#undef P_INT
-#undef P_STR
-#undef P_BOOL
+void Ws2811Wrapper::PrintOptions(const RGBMatrix::Options &o)
+{
+    #define P_INT(val) fprintf(stderr, "Ws2811Wrapper::initStrip %s : %d\n", #val, o.val)
+    #define P_STR(val) fprintf(stderr, "Ws2811Wrapper::initStrip %s : %s\n", #val, o.val)
+    #define P_BOOL(val) fprintf(stderr, "Ws2811Wrapper::initStrip %s : %s\n", #val, o.val ? "true":"false")
+      P_STR(hardware_mapping);
+      P_INT(rows);
+      P_INT(cols);
+      P_INT(chain_length);
+      P_INT(parallel);
+      P_INT(pwm_bits);
+      P_INT(pwm_lsb_nanoseconds);
+      P_INT(pwm_dither_bits);
+      P_INT(brightness);
+      P_INT(scan_mode);
+      P_INT(row_address_type);
+      P_INT(multiplexing);
+      P_BOOL(disable_hardware_pulsing);
+      P_BOOL(show_refresh_rate);
+      P_BOOL(inverse_colors);
+      P_STR(led_rgb_sequence);
+      P_STR(pixel_mapper_config);
+      P_STR(panel_type);
+      P_INT(limit_refresh_rate_hz);
+    #undef P_INT
+    #undef P_STR
+    #undef P_BOOL
 }
 
 ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedStripType stripType, matrixDirection matrixDir, Wiring2121 wiring)
@@ -248,10 +254,10 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
     _led_options.show_refresh_rate = false;
     _runtime.drop_privileges = -1;
     _runtime.gpio_slowdown = 5;
-    //_runtime.daemon = 1;
     _runtime.do_gpio_init = true;
 
-    PrintOptions(_led_options);
+   // PrintOptions(_led_options); used for debugging.
+
     _matrixDirection[_curChannel] = matrixDir;
 
     _rgbMatrix = CreateMatrixFromOptions(_led_options, _runtime);
@@ -261,7 +267,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
 
      if (retval == WS2811_SUCCESS)
      {
-         _frame  = _rgbMatrix->CreateFrameCanvas();
+         _frame  = _rgbMatrix->SwapOnVSync(_frame);
          _matrix[_curChannel] =  new ws2811_led_t[sizeof(ws2811_led_t) * (_rows[_curChannel] * _columns[_curChannel])];
 
      }
@@ -315,19 +321,6 @@ void Ws2811Wrapper::setStripType(LedStripType stripType)
         //todo logerror
         break;
     }
-}
-
-const char * Ws2811Wrapper::getws2811ErrorString(const ws2811_return_t state)
-{
-    const unsigned int index = -state;
-    static const char * const ret_state_str[] = { WS2811_RETURN_STATES(WS2811_RETURN_STATES_STRING) };
-
-    if (index < sizeof(ret_state_str) / sizeof(ret_state_str[0]))
-    {
-        return ret_state_str[index];
-    }
-
-    return "";
 }
 
 
@@ -456,13 +449,14 @@ ws2811_led_t Ws2811Wrapper::getPixelColor(u_int32_t pixel)
 
 void Ws2811Wrapper::setBrightness(u_int8_t brightness)
 {
+    _brightness[_curChannel] = brightness;
     if(_stripTypes[_curChannel] != MATRIX_2121)
     {
         _ledstring.channel[_curChannel].brightness = brightness;
     }
     else
     {
-        _rgbMatrix->SetBrightness(brightness);
+        _rgbMatrix->SetBrightness((brightness > 100 ) ?  100 : brightness );
     }
 
 }
@@ -565,7 +559,9 @@ void Ws2811Wrapper::waitMillSec(u_int32_t mill)
     clock_nanosleep(CLOCK_REALTIME, 0 , &deadline, NULL);
 }
 
-const char * getws2811ErrorString(const ws2811_return_t state)
+const char * Ws2811Wrapper::getws2811ErrorString(const ws2811_return_t state)
 {
     return ws2811_get_return_t_str(state);
 }
+
+

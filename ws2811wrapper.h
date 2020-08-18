@@ -15,6 +15,10 @@
 
 using namespace rgb_matrix;
 
+struct ColorLookup
+{
+  uint16_t color[256];
+};
 
 /*
 
@@ -318,6 +322,8 @@ private:
     //Internal
     void setStripType(LedStripType stripType);
     void setPixel(u_int32_t pixal, ws2811_led_t color);
+    static void PrintOptions(const RGBMatrix::Options &o);
+
     void cleanUp();
 
     //Private is private we don't talk about them.
@@ -329,9 +335,10 @@ private:
     LedStripType _stripTypes[2];
     matrixDirection _matrixDirection[2];
     Wiring2121 _wiring[2];
-
+    u_int8_t _brightness[2];
     bool _clearOnExit;
     ws2811Channel _curChannel;
+    bool _useGammaCorrection[2];
 
    //EXP
     RGBMatrix::Options _led_options;
