@@ -243,7 +243,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
 
     }
 
-    _led_options.pwm_bits = 7;
+    _led_options.pwm_bits = 8;
 
 
     _led_options.rows = rows;
@@ -253,7 +253,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
     _led_options.multiplexing = 0;
     _led_options.show_refresh_rate = false;
     _runtime.drop_privileges = -1;
-    _runtime.gpio_slowdown = 5;
+    _runtime.gpio_slowdown = 3;
     _runtime.do_gpio_init = true;
 
    // PrintOptions(_led_options); used for debugging.
