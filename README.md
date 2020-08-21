@@ -5,7 +5,13 @@ It will require the library listed above, and expects the headers from that lib 
 As this uses scons, and I have little understanding of it, I simply copied the file to the proper location.
 
 # *** UPDATE ***
+
+
 Well, I no longer consider this just a "simple" wrapper around rpi_ws281x. It now provides some of the same features you see in higher level languages.
+
+<b>Soon I will be renaming this Lib as it no longer reflects what it does. 
+Now the Ws2811 Wrapper supports https://github.com/hzeller/rpi-rgb-led-matrix , thats correct, this lib will properly control most of the popular matrix boards 
+on the market.  This is exciting as the ws2811 based LEDS are expensive.</b>
 
 While the rpi_ws281x is  a fantastic lib on its own, it does lack a bit of lets say user-friendliness. It has and always will be a base lib for others to build on.  When I was looking to use this in my projects, I could not find a decent c++ lib that provided some of the same functionality I found in the Arduino world.
 As a result, several years ago I developed this for my own projects. Recently I have posted it here, hoping others will find it useful.
