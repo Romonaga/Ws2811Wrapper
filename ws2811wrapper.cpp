@@ -382,20 +382,17 @@ u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixel)
             index = (row % 2 == 0) ? ((row * _columns[_curChannel]) + pixel)  : (row * _columns[_curChannel]) + pixel;
         break;
 
-        case MatrixRightLeft:
+        case MatrixTopDown:
+            index = (row * _columns[_curChannel]) + pixel;
+        break;
+
+        case MatrixTopDownLeft:  //very speical case. Only saw on one board.
              index = (row * _columns[_curChannel]) + ((_columns[_curChannel] - 1) - pixel);
         break;
 
-        case MatrixTopDown:
-             index = (row * _columns[_curChannel]) + pixel;
-           //  fprintf(stderr,"row: %d col: %d index: %d\n",row, pixel, index);
-        break;
     }
 
-  //fprintf(stderr,"getPixalIndex row: %d col: %d, index: %d\n",row, pixal, index);
-
     return index;
-
 
 }
 

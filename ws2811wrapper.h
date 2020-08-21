@@ -229,8 +229,8 @@ typedef enum {
     TopRightDown = 2,
     BottomRightUp = 3,
     TopRightLeft = 4,
-    MatrixRightLeft = 5,
-    MatrixTopDown = 6
+    MatrixTopDown = 5,
+    MatrixTopDownLeft = 6,  //very special case.
 } matrixDirection;
 
 typedef enum {
