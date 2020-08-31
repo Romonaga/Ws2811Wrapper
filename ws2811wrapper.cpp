@@ -54,7 +54,8 @@ Ws2811Wrapper::~Ws2811Wrapper()
     if(true == _clearOnExit)
         clearLeds();
 
-    cleanUp();
+    cleanUpWs2811();
+    cleanUpRpiMatrix();
 
 }
 
@@ -80,7 +81,7 @@ ws2811_return_t Ws2811Wrapper::show()
             for (uint32_t col  = 0; col  < _columns[_curChannel]; col++)
             {
                 led = (row * _columns[_curChannel]) + col;
-                _frame->SetPixel(col, row, Red(_matrix[_curChannel][led]), Green(_matrix[_curChannel][led]), Blue(_matrix[_curChannel][led]) );
+                _frame->SetPixel(col, row, red(_matrix[_curChannel][led]), green(_matrix[_curChannel][led]), blue(_matrix[_curChannel][led]) );
             }
         }
 
@@ -101,29 +102,46 @@ void Ws2811Wrapper::setCustomGammaCorrection(double gammaFactor)
 
 }
 
-void Ws2811Wrapper::cleanUp()
+void Ws2811Wrapper::cleanUpWs2811()
 {
-    if(_matrix[Channel1] != nullptr)
+    if(_matrix[Channel1] != nullptr && _stripTypes[Channel1] != MATRIX_2121 )
     {
         delete [] _matrix[Channel1];
         _matrix[Channel1] = nullptr;
     }
 
-    if(_matrix[Channel2] != nullptr)
+    if(_matrix[Channel2] != nullptr && _stripTypes[Channel1] != MATRIX_2121 )
     {
         delete [] _matrix[Channel2];
         _matrix[Channel2] = nullptr;
     }
 
+    if( (_stripTypes[Channel1] != NONE && _stripTypes[Channel2] != NONE) && (_stripTypes[Channel1] != MATRIX_2121 || _stripTypes[Channel2] != MATRIX_2121))
+        ws2811_fini(&_ledstring);
+
+}
+
+void Ws2811Wrapper::cleanUpRpiMatrix()
+{
+    if(_matrix[Channel1] != nullptr && _stripTypes[Channel1] == MATRIX_2121 )
+    {
+        delete [] _matrix[Channel1];
+        _matrix[Channel1] = nullptr;
+    }
+
+    if(_matrix[Channel2] != nullptr && _stripTypes[Channel2] == MATRIX_2121 )
+    {
+        delete [] _matrix[Channel2];
+        _matrix[Channel2] = nullptr;
+    }
+
+
     if(_rgbMatrix != nullptr)
     {
        _rgbMatrix->Clear();
        delete _rgbMatrix;
+       _rgbMatrix = nullptr;
     }
-
-    if( (_stripTypes[Channel1] != NONE && _stripTypes[Channel2] != NONE) && (_stripTypes[Channel1] != MATRIX_2121 || _stripTypes[Channel2] != MATRIX_2121))
-        ws2811_fini(&_ledstring);
-
 }
 
 void Ws2811Wrapper::setCurChannel(ws2811Channel curChannel)
@@ -146,7 +164,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(ws2811Channel channel, u_int32_t rows, 
     _matrixDirection[_curChannel] = matrixDir;
 
     if(_ledstring.channel[_curChannel].count > 0)
-        cleanUp();
+        cleanUpWs2811();
 
 
     _ledstring.channel[_curChannel].count = _rows[_curChannel] * _columns[_curChannel];
@@ -220,6 +238,8 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
     _rows[_curChannel] = rows;
     _wiring[_curChannel] = wiring;
     setStripType(stripType);
+
+    cleanUpRpiMatrix();
 
     switch(wiring)
     {
@@ -396,34 +416,34 @@ u_int32_t Ws2811Wrapper::getPixelIndex(u_int32_t row, u_int32_t pixel)
 
 }
 
-void Ws2811Wrapper::setPixel(u_int32_t pixel, ws2811_led_t color)
+void Ws2811Wrapper::setPixel(u_int32_t pixel, ws2811_led_t value)
 {
     if( pixel > getNumberLeds() - 1)  return;
 
-    _matrix[_curChannel][pixel] = color;
+    _matrix[_curChannel][pixel] = value;
 
 }
 
-void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixel, ws2811_led_t color)
+void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixel, ws2811_led_t value)
 {
-     setPixel(getPixelIndex(row, pixel), color );
+     setPixel(getPixelIndex(row, pixel), value );
 }
 
-void Ws2811Wrapper::setPixelColor(u_int32_t pixel, ws2811_led_t color)
+void Ws2811Wrapper::setPixelColor(u_int32_t pixel, ws2811_led_t value)
 {
-    setPixel(pixel, color);
+    setPixel(pixel, value);
 }
 
 
 
 void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixel, u_int8_t red, u_int8_t green, u_int8_t blue)
 {
-     setPixel(getPixelIndex(row, pixel), Color(red, green, blue));
+     setPixel(getPixelIndex(row, pixel), color(red, green, blue));
 }
 
 void Ws2811Wrapper::setPixelColor(u_int32_t row, u_int32_t pixel, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
 {
-    setPixel(getPixelIndex(row, pixel), Color(red, green, blue, white));
+    setPixel(getPixelIndex(row, pixel), color(red, green, blue, white));
 }
 
 ws2811_led_t Ws2811Wrapper::getPixelColor(u_int32_t row, u_int32_t pixel)
@@ -476,7 +496,7 @@ u_int32_t Ws2811Wrapper::getRows()
 
 
 
-ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue)
+ws2811_led_t Ws2811Wrapper::color(u_int8_t red, u_int8_t green, u_int8_t blue)
 {
 
     return ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
@@ -484,55 +504,55 @@ ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue)
 
 }
 
-ws2811_led_t Ws2811Wrapper::Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
+ws2811_led_t Ws2811Wrapper::color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white)
 {
     return ((u_int32_t) white << 24) | ((u_int32_t) red << 16) | ((u_int32_t) green << 8) | blue;
 
 }
 
-ws2811_led_t Ws2811Wrapper::Wheel(u_int8_t wheelPos)
+ws2811_led_t Ws2811Wrapper::wheel(u_int8_t wheelPos)
 {
     wheelPos = 255 - wheelPos;
     if(wheelPos < 85)
     {
-        return Color(255 - wheelPos * 3, 0, wheelPos * 3);
+        return color(255 - wheelPos * 3, 0, wheelPos * 3);
     }
 
     if(wheelPos < 170)
     {
         wheelPos -= 85;
-        return Color(0, wheelPos * 3, 255 - wheelPos * 3);
+        return color(0, wheelPos * 3, 255 - wheelPos * 3);
     }
 
     wheelPos -= 170;
-    return Color(wheelPos * 3, 255 - wheelPos * 3, 0);
+    return color(wheelPos * 3, 255 - wheelPos * 3, 0);
 }
 
-int Ws2811Wrapper::Red(ws2811_led_t color)
+int Ws2811Wrapper::red(ws2811_led_t value)
 {
-    return (color >> 16) & 0xFF;
+    return (value >> 16) & 0xFF;
 }
 
-int Ws2811Wrapper::Green(ws2811_led_t color)
+int Ws2811Wrapper::green(ws2811_led_t value)
 {
-    return (color >> 8) & 0xFF;
+    return (value >> 8) & 0xFF;
 }
 
-int Ws2811Wrapper::Blue(ws2811_led_t color)
+int Ws2811Wrapper::blue(ws2811_led_t value)
 {
-    return color & 0xFF;
+    return value & 0xFF;
 }
 
-ws2811_led_t Ws2811Wrapper::DimColor(ws2811_led_t color)
+ws2811_led_t Ws2811Wrapper::dimColor(ws2811_led_t value)
 {
-    ws2811_led_t dimColor = Color(Red(color) >> 1, Green(color) >> 1, Blue(color) >> 1);
+    ws2811_led_t dimColor = color(red(value) >> 1, green(value) >> 1, blue(value) >> 1);
     return dimColor;
 }
 
 
-ws2811_led_t Ws2811Wrapper::BrightenColor(ws2811_led_t color)
+ws2811_led_t Ws2811Wrapper::brightenColor(ws2811_led_t value)
 {
-    ws2811_led_t dimColor = Color(Red(color) << 1, Green(color) << 1, Blue(color) << 1);
+    ws2811_led_t dimColor = color(red(value) << 1, green(value) << 1, blue(value) << 1);
     return dimColor;
 }
 

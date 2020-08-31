@@ -277,9 +277,9 @@ public:
     ws2811_return_t show();
 
     // Self commenting code here
-    void setPixelColor(u_int32_t row, u_int32_t pixel, ws2811_led_t color);
-    void setPixelColor(u_int32_t pixel, ws2811_led_t color);
-    void setPixelColor(ws2811_led_t color);
+    void setPixelColor(u_int32_t row, u_int32_t pixel, ws2811_led_t value);
+    void setPixelColor(u_int32_t pixel, ws2811_led_t value);
+    void setPixelColor(ws2811_led_t value);
     void setPixelColor(u_int32_t row, u_int32_t pixel, u_int8_t red, u_int8_t green, u_int8_t blue);
     void setPixelColor(u_int32_t row, u_int32_t pixel, u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
     u_int32_t getPixelIndex(u_int32_t row, u_int32_t pixel);
@@ -314,14 +314,14 @@ public:
     static const char * getws2811ErrorString(const ws2811_return_t state);
 
     //Used for converting the RGB into a useul number for the matrix colors.
-    ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue);
-    ws2811_led_t Color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
-    ws2811_led_t Wheel(u_int8_t wheelPos);
-    int Red(ws2811_led_t color);
-    int  Green(ws2811_led_t color);
-    int  Blue(ws2811_led_t color);
-    ws2811_led_t DimColor(ws2811_led_t color);
-    ws2811_led_t BrightenColor(ws2811_led_t color);
+    ws2811_led_t color(u_int8_t red, u_int8_t green, u_int8_t blue);
+    ws2811_led_t color(u_int8_t red, u_int8_t green, u_int8_t blue, u_int8_t white);
+    ws2811_led_t wheel(u_int8_t wheelPos);
+    int red(ws2811_led_t value);
+    int  green(ws2811_led_t value);
+    int  blue(ws2811_led_t value);
+    ws2811_led_t dimColor(ws2811_led_t value);
+    ws2811_led_t brightenColor(ws2811_led_t value);
 
     static void waitSec(u_int32_t sec);
     static void waitMillSec(u_int32_t mill);
@@ -333,10 +333,11 @@ public:
 private:
     //Internal
     void setStripType(LedStripType stripType);
-    void setPixel(u_int32_t pixal, ws2811_led_t color);
+    void setPixel(u_int32_t pixal, ws2811_led_t value);
     static void PrintOptions(const RGBMatrix::Options &o);
 
-    void cleanUp();
+    void cleanUpWs2811();
+    void cleanUpRpiMatrix();
 
     //Private is private we don't talk about them.
 private:
