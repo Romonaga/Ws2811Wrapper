@@ -263,8 +263,7 @@ ws2811_return_t Ws2811Wrapper::initStrip(u_int32_t rows, u_int32_t columns, LedS
 
     }
 
-    _led_options.pwm_bits = 8;
-
+//    _led_options.pwm_bits = 8;
 
     _led_options.rows = rows;
     _led_options.cols = columns;
